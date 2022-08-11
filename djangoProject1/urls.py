@@ -14,15 +14,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from sensor import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/pressure_sensors/', views.Sensors.as_view({'get': 'list', 'post': 'create'}), name='pressure_sensors'),
-    path('api/pressure_readings/', views.Readings.as_view({'get': 'list', 'post': 'create'})),
+    path('sensor/', include('sensor.urls')),
+    path('polls/', include('polls.urls')),
 ]
 # from rest_framework.routers import SimpleRouter
 #

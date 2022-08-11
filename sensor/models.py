@@ -1,9 +1,13 @@
+import datetime
 import uuid
 
+import django.utils.timezone
 import rest_framework.status
 from django.db import models
 from django.core.exceptions import ValidationError
 # Create your models here.
+from django.utils import timezone
+
 
 def mustStartWithPSSR(value):
     str = [*value]
@@ -12,21 +16,21 @@ def mustStartWithPSSR(value):
 
 
 class PressureSensor(models.Model):
-
-    Label = models.CharField(max_length=70, validators=[mustStartWithPSSR])
-    InstallationDate = models.DateTimeField()
-    Latitude = models.FloatField(default=100)
-    Longitude = models.FloatField(default=100)
-    PressureSensor_Id = models.CharField(max_length=50, null=False, default=uuid.uuid4)
+    label = models.CharField(max_length=200, default='PSSR', validators=[mustStartWithPSSR])
+    installation_date = models.DateField('date installation', default=datetime.date.today())
+    latitude = models.DecimalField(
+        max_digits=19, decimal_places=10, blank=True, null=True)
+    longitude = models.DecimalField(
+        max_digits=19, decimal_places=10, blank=True, null=True)
+    serial_number = models.CharField(max_length=200, default=uuid.uuid4)
 
     def __str__(self):
-        return self.Label
+        return self.label
 
 class PressureReading(models.Model):
+    sensor = models.ForeignKey(PressureSensor, related_name='readings', on_delete=models.CASCADE, default=1)
+    date_time = models.DateTimeField('date installation', default=timezone.now())
+    value = models.DecimalField(max_digits=19, decimal_places=10, blank=True, null=True)
 
-    SensorId = models.ForeignKey('PressureSensor', on_delete=models.CASCADE)
-    DateTime = models.DateTimeField()
-    Value = models.FloatField(default=0)
-
-    # def __str__(self):
-    #     return self.SensorId
+    def __str__(self):
+        return 'value={0} '.format(self.value)
