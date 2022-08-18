@@ -43,7 +43,7 @@ class Sensors(viewsets.ViewSet):
         return response.Response(serializer.data)
 
     def create(self, request):
-        PressureSensor.objects.get_or_create(Label=request.POST.get('label'), InstallationDate=request.POST.get('InstallationDate'), Longitude=request.POST.get('longitude'), Latitude=request.POST.get('latitude'))
+        PressureSensor.objects.get_or_create(label=request.POST.get('label'), installation_date=request.POST.get('InstallationDate'), longitude=request.POST.get('longitude'), latitude=request.POST.get('latitude'))
         return response.Response({
             'data': [],
             'msg': 'Created!'
@@ -63,18 +63,18 @@ class Readings(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
 
-        dateTime = request.POST.get('DateTime')
+        dateTime = request.POST.get('date_time')
         dateTimeNu = datetime.datetime.fromisoformat(dateTime)
 
         try:
-            sensorID = PressureSensor.objects.get(pk=request.POST.get('sensorID'))
+            sensorID = PressureSensor.objects.get(pk=request.POST.get('sensor_id')).pk
         except ObjectDoesNotExist:
             return response.Response({
                 'data': [],
                 'msg': 'The entire id is not exist!'
             })
 
-        PressureReading.objects.get_or_create(SensorId=sensorID, DateTime=dateTimeNu, Value=request.POST.get('value'))
+        PressureReading.objects.get_or_create(sensor_id=sensorID, date_time=dateTimeNu, value=request.POST.get('value'))
         return response.Response({
             'data': [],
             'msg': 'Created!'
