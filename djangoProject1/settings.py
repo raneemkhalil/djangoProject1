@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django_filters',
     'psycopg2',
     'polls',
+    'fl_tags',
 ]
 
 MIDDLEWARE = [

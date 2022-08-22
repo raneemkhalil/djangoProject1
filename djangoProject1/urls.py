@@ -20,8 +20,8 @@ from rest_framework.routers import DefaultRouter
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('sensor/', include('sensor.urls')),
-    path('polls/', include('polls.urls')),
+    path('', include('sensor.urls')),
+    path('', include('polls.urls')),
 ]
 # from rest_framework.routers import SimpleRouter
 #

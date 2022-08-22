@@ -27,6 +27,7 @@ class PressureSensor(models.Model):
     def __str__(self):
         return self.label
 
+
 class PressureReading(models.Model):
     sensor = models.ForeignKey(PressureSensor, related_name='readings', on_delete=models.CASCADE, default=1)
     date_time = models.DateTimeField('date installation', default=timezone.now())
@@ -34,3 +35,13 @@ class PressureReading(models.Model):
 
     def __str__(self):
         return 'value={0} '.format(self.value)
+
+
+class Stag(models.Model):
+    pressure_sensor = models.ManyToManyField(PressureSensor, through='PressureSensorTag')
+    label = models.CharField(max_length=200, default=" ")
+
+
+class PressureSensorTag(models.Model):
+    pressure_sensor = models.ForeignKey(PressureSensor, on_delete=models.CASCADE)
+    stag = models.ForeignKey(Stag, on_delete=models.CASCADE)
