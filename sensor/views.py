@@ -56,7 +56,7 @@ class Readings(viewsets.ModelViewSet):
     serializer_class = PressureReadingSerializer
     filter_backends = (rest_framework.DjangoFilterBackend,)
     filterset_class = ReadingsFilter
-    # filterset_fields = ('Value',)
+    filterset_fields = ('Value',)
 
     def list(self, request, *args, **kwargs):
         return response.Response(self.filter_queryset(self.queryset))

@@ -32,6 +32,7 @@ class PressureReading(models.Model):
     sensor = models.ForeignKey(PressureSensor, related_name='readings', on_delete=models.CASCADE, default=1)
     date_time = models.DateTimeField('date installation', default=timezone.now())
     value = models.DecimalField(max_digits=19, decimal_places=10, blank=True, null=True)
+    raw_value = models.DecimalField(max_digits=19, decimal_places=10, blank=True, null=True)
 
     def __str__(self):
         return 'value={0} '.format(self.value)
