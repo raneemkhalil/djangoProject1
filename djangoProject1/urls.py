@@ -1,7 +1,7 @@
-"""djangoProject1 URL Configuration
+"""djangoProject URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.1/topics/http/urls/
+    https://docs.djangoproject.com/en/4.0/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -14,8 +14,19 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include('sensor.urls')),
+    path('', include('polls.urls')),
 ]
+# from rest_framework.routers import SimpleRouter
+#
+# router = SimpleRouter()
+# router.register(r'api/pressure_sensors', views.Sensors, basename='sensors')
+# router.register(r'api/pressure_readings', views.Readings, basename='readings')
+# router.register(r'api/pressure_readings/?from=<str:datetime>&to=<str:DateTime>', views.Readings, basename='sensors-readings')
+# urlpatterns += router.urls
