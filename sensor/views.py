@@ -1,12 +1,15 @@
 import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
+from django_filters.filterset import BaseFilterSet
 from rest_framework import generics
 from rest_framework import response
-from rest_framework import viewsets
+from rest_framework import viewsets, views
 from .models import PressureSensor, PressureReading
 from .serialize import PressureSensorSerializer, PressureReadingSerializer
 from django_filters import rest_framework
+from django.http import HttpResponse
+from django.contrib.contenttypes.models import ContentType
 # Create your views here.
 
 # class Sensors(generics.ListAPIView):
@@ -26,13 +29,13 @@ from django_filters import rest_framework
 
 
 class ReadingsFilter(rest_framework.FilterSet):
-    # from_date = rest_framework.DateTimeFilter(field_name='DateTime', lookup_expr='gte')
-    # to_date = rest_framework.DateTimeFilter(field_name='DateTime', lookup_expr='lte')
-    DateTime = rest_framework.DateTimeFromToRangeFilter()
+    since = rest_framework.DateTimeFilter(field_name='date_time', lookup_expr='gte')
+    until = rest_framework.DateTimeFilter(field_name='date_time', lookup_expr='lte')
+    # DateTime = rest_framework.DateTimeFromToRangeFilter()
 
     class Meta:
         model = PressureReading
-        fields = ['DateTime']
+        fields = ['date_time']
 
 
 class Sensors(viewsets.ViewSet):
@@ -56,7 +59,7 @@ class Readings(viewsets.ModelViewSet):
     serializer_class = PressureReadingSerializer
     filter_backends = (rest_framework.DjangoFilterBackend,)
     filterset_class = ReadingsFilter
-    filterset_fields = ('Value',)
+    # filterset_fields = ('Value',)
 
     def list(self, request, *args, **kwargs):
         return response.Response(self.filter_queryset(self.queryset))
@@ -79,3 +82,47 @@ class Readings(viewsets.ModelViewSet):
             'data': [],
             'msg': 'Created!'
         })
+
+
+class Calculating(views.APIView):
+
+    def get(self, request):
+        since = datetime.datetime.fromisoformat(request.GET.get('since'))
+        until = datetime.datetime.fromisoformat(request.GET.get('until'))
+        queryset = PressureReading.objects.filter(date_time__range=[since, until])
+
+        if request.GET.get('calculation') == "sum":
+            sum, count = summation(queryset)
+            return response.Response(sum)
+        elif request.GET.get('calculation') == "avg":
+            sum, count = summation(queryset)
+            avg = sum / count
+            return HttpResponse(avg)
+        else:
+            return response.Response('please choice sum or avg')
+
+
+def summation(queryset):
+    sum = 0
+    count = 0
+    for obj in queryset:
+        sum = sum + obj.value
+        count = count + 1
+    return sum, count
+
+
+def calculating_readings(request):
+    since = datetime.datetime.fromisoformat(request.GET.get('since'))
+    until = datetime.datetime.fromisoformat(request.GET.get('until'))
+    queryset = PressureReading.objects.filter(date_time__range=[since, until])
+
+    if request.GET.get('calculation') == "sum":
+        sum, count = summation(queryset)
+        return HttpResponse(sum)
+    elif request.GET.get('calculation') == "avg":
+        sum, count = summation(queryset)
+        avg = sum/count
+        return HttpResponse(avg)
+    else:
+        return HttpResponse('please choice sum or avg')
+
