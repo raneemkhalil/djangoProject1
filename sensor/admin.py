@@ -28,7 +28,7 @@ class PressureSensor(admin.ModelAdmin):
 
 
 class PressureReading(admin.ModelAdmin):
-    list_display = ('id', 'date_time', 'value', 'sensor')
+    list_display = ('id', 'date_time', 'value', 'raw_value', 'sensor')
     inlines = [Tags]
 
 
