@@ -14,4 +14,4 @@ class PressureReadingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PressureReading
-        fields = ['SensorId', 'DateTime', 'Value']
+        fields = ['SensorId', 'date_time', 'value']
