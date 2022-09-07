@@ -1,12 +1,14 @@
 import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import response, views, viewsets, status
+from rest_framework import response, views, viewsets, status, generics
 from .models import PressureSensor, PressureReading
 from .serialize import PressureSensorSerializer, PressureReadingSerializer
 from django_filters import rest_framework
+import logging
 from django.http import HttpResponse
 # Create your views here.
+
 
 # class Sensors(generics.ListAPIView):
 #     queryset = PressureSensor.objects.all()
@@ -24,6 +26,13 @@ from django.http import HttpResponse
 #         return pressure_readings
 
 ############# a functions to be test ###############
+
+
+logging.basicConfig(filename='general.log', level='INFO')
+# logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
+count = count1 = 0
+
 
 def is_greater(x, y):
     if x > y:
@@ -127,21 +136,31 @@ class Calculating(views.APIView):
 
     def get(self, request):
 
+        global count
+        count = count + 1
+        log.info(count)
+
         since = datetime.datetime.fromisoformat(request.GET.get('since'))
         until = datetime.datetime.fromisoformat(request.GET.get('until'))
         operation = request.GET.get('calculation')
         if missing_param(since, until, operation):
             return response.Response(status=status.HTTP_400_BAD_REQUEST)
         result, qs = math(since, until, operation)
-        return response.Response(result)
+
+        return HttpResponse(result)
 
 
 def calculating_readings(request):
+
+    global count1
+    count1 = count1 + 1
+    log.info(count1)
 
     since = datetime.datetime.fromisoformat(request.GET.get('since'))
     until = datetime.datetime.fromisoformat(request.GET.get('until'))
     operation = request.GET.get('calculation')
     result, qs = math(since, until, operation)
-    return response.Response(result)
+    return HttpResponse(result)
+
 
 

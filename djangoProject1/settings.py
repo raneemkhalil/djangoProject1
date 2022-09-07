@@ -94,6 +94,46 @@ DATABASES = {
     }
 }
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        'file1': {
+            'class': 'logging.FileHandler',
+            'filename': 'general.log',
+        },
+        'file2': {
+            'class': 'logging.FileHandler',
+            'filename': 'general_1.log',
+        },
+    },
+	# Print any Warning logs to the console
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+    'loggers': {
+		# Print all database queries to the console
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'sensor.views': {
+            'handlers': ['file1'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'polls.views': {
+            'handlers': ['file2'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
 
 # Password validation
 # https://docs.djangoproject1.com/en/4.0/ref/settings/#auth-password-validators
