@@ -28,7 +28,7 @@ from django.http import HttpResponse
 ############# a functions to be test ###############
 
 
-logging.basicConfig(filename='general.log', level='INFO')
+# logging.basicConfig(filename='general.log', level='INFO')
 # logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 count = count1 = 0
@@ -43,8 +43,11 @@ def is_greater(x, y):
 
 def math(since, until, operation):
 
+    if missing_param(since, until, operation):
+        return 'another params needed!', []
+
     if is_greater(since, until):
-        return 'since is grater than until pls switch'
+        return 'since is grater than until pls switch', []
 
     queryset = PressureReading.objects.filter(date_time__range=[since, until])
 
