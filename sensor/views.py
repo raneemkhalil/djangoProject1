@@ -1,18 +1,22 @@
 import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import response, views, viewsets, status
+from django_filters.filterset import BaseFilterSet
+from rest_framework import generics
+from rest_framework import response
+from rest_framework import viewsets, views
 from .models import PressureSensor, PressureReading
 from .serialize import PressureSensorSerializer, PressureReadingSerializer
 from django_filters import rest_framework
 from django.http import HttpResponse
+from django.contrib.contenttypes.models import ContentType
 # Create your views here.
 
 # class Sensors(generics.ListAPIView):
 #     queryset = PressureSensor.objects.all()
 #     serializer_class = PressureSensorSerializer
-
-
+#
+#
 # class Reading(generics.ListAPIView):
 #     queryset = PressureReading.objects.all()
 #     serializer_class = PressureReadingSerializer
@@ -23,48 +27,11 @@ from django.http import HttpResponse
 #         pressure_readings = PressureReading.objects.filter(DateTime__range=[date1, date2]).select_related()
 #         return pressure_readings
 
-############# a functions to be test ###############
-
-def is_greater(x, y):
-    if x > y:
-        return True
-    else:
-        return False
-
-
-def math(since, until, operation):
-
-    if missing_param(since, until, operation):
-        return 'another params needed!', []
-    
-    if is_greater(since, until):
-        return 'since is grater than until pls switch', []
-
-    queryset = PressureReading.objects.filter(date_time__range=[since, until])
-
-    if queryset.count() == 0:
-        return 0, queryset
-
-    sum, count = summation(queryset)
-
-    if operation == "sum":
-        return sum, queryset
-    elif operation == "avg":
-        avg = sum/count
-        return avg, queryset
-    else:
-        return 'please choice sum or avg', queryset
-
-
-def missing_param(since, until, calculation):
-    if since is None or until is None or calculation is None:
-        return True
-
 
 class ReadingsFilter(rest_framework.FilterSet):
-    # since = rest_framework.DateTimeFilter(field_name='date_time', lookup_expr='gte')
-    # until = rest_framework.DateTimeFilter(field_name='date_time', lookup_expr='lte')
-    DateTime = rest_framework.DateTimeFromToRangeFilter()
+    since = rest_framework.DateTimeFilter(field_name='date_time', lookup_expr='gte')
+    until = rest_framework.DateTimeFilter(field_name='date_time', lookup_expr='lte')
+    # DateTime = rest_framework.DateTimeFromToRangeFilter()
 
     class Meta:
         model = PressureReading
@@ -117,6 +84,24 @@ class Readings(viewsets.ModelViewSet):
         })
 
 
+class Calculating(views.APIView):
+
+    def get(self, request):
+        since = datetime.datetime.fromisoformat(request.GET.get('since'))
+        until = datetime.datetime.fromisoformat(request.GET.get('until'))
+        queryset = PressureReading.objects.filter(date_time__range=[since, until])
+
+        if request.GET.get('calculation') == "sum":
+            sum, count = summation(queryset)
+            return response.Response(sum)
+        elif request.GET.get('calculation') == "avg":
+            sum, count = summation(queryset)
+            avg = sum / count
+            return HttpResponse(avg)
+        else:
+            return response.Response('please choice sum or avg')
+
+
 def summation(queryset):
     sum = 0
     count = 0
@@ -126,25 +111,18 @@ def summation(queryset):
     return sum, count
 
 
-class Calculating(views.APIView):
-
-    def get(self, request):
-
-        since = datetime.datetime.fromisoformat(request.GET.get('since'))
-        until = datetime.datetime.fromisoformat(request.GET.get('until'))
-        operation = request.GET.get('calculation')
-        if missing_param(since, until, operation):
-            return response.Response(status=status.HTTP_400_BAD_REQUEST)
-        result, qs = math(since, until, operation)
-        return response.Response(result)
-
-
 def calculating_readings(request):
-
     since = datetime.datetime.fromisoformat(request.GET.get('since'))
     until = datetime.datetime.fromisoformat(request.GET.get('until'))
-    operation = request.GET.get('calculation')
-    result, qs = math(since, until, operation)
-    return response.Response(result)
+    queryset = PressureReading.objects.filter(date_time__range=[since, until])
 
+    if request.GET.get('calculation') == "sum":
+        sum, count = summation(queryset)
+        return HttpResponse(sum)
+    elif request.GET.get('calculation') == "avg":
+        sum, count = summation(queryset)
+        avg = sum/count
+        return HttpResponse(avg)
+    else:
+        return HttpResponse('please choice sum or avg')
 
