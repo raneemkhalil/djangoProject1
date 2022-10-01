@@ -1,11 +1,20 @@
 import datetime
 
+import requests
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import response, views, viewsets, status
+from rest_framework.decorators import api_view
 from .models import PressureSensor, PressureReading
 from .serialize import PressureSensorSerializer, PressureReadingSerializer
 from django_filters import rest_framework
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+import logging
+from django.shortcuts import redirect
+
+log = logging.getLogger('__name__')
 # Create your views here.
 
 # class Sensors(generics.ListAPIView):
@@ -36,7 +45,7 @@ def math(since, until, operation):
 
     if missing_param(since, until, operation):
         return 'another params needed!', []
-    
+
     if is_greater(since, until):
         return 'since is grater than until pls switch', []
 
@@ -71,14 +80,15 @@ class ReadingsFilter(rest_framework.FilterSet):
         fields = ['date_time']
 
 
-class Sensors(viewsets.ViewSet):
+class Sensors(viewsets.ModelViewSet):
+    queryset = PressureSensor.objects.all()
+    serializer_class = PressureSensorSerializer
 
-    def list(self, request):
-        queryset = PressureSensor.objects.all()
-        serializer = PressureSensorSerializer(queryset, many=True)
+    def list(self, request, *args, **kwargs):
+        serializer = PressureSensorSerializer(self.queryset, many=True)
         return response.Response(serializer.data)
 
-    def create(self, request):
+    def create(self, request, *args, **kwargs):
         PressureSensor.objects.get_or_create(label=request.POST.get('label'), installation_date=request.POST.get('InstallationDate'), longitude=request.POST.get('longitude'), latitude=request.POST.get('latitude'))
         return response.Response({
             'data': [],
@@ -148,3 +158,23 @@ def calculating_readings(request):
     return response.Response(result)
 
 
+@csrf_exempt
+@api_view(['POST', 'GET'])
+@login_required(login_url='/admin/login/')
+def greet_users(request):
+    if request.method == "POST" and 'username' in request.POST and 'password' in request.POST:
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            return HttpResponse('Hello ' + request.user.username + '!')
+            # if not request.user.is_authenticated:
+            #     return redirect('%s?next=%s' % ('/admin/login/', '/api/greet/'))
+        else:
+            return HttpResponse('invalid input!')
+    else:
+        return HttpResponse('Hello ' + request.user.username + '!')
+        # if request.user.is_authenticated:
+        #     return HttpResponse('Hello ' + request.user.username + '!')
+        # else:
+        #     return redirect('%s?next=%s' % ('/admin/login/', '/api/greet/'))

@@ -6,7 +6,7 @@ class PressureSensorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PressureSensor
-        fields = ['Label', 'InstallationDate', 'Latitude', 'Longitude']
+        fields = ['label', 'installation_date', 'latitude', 'longitude']
 
 
 class PressureReadingSerializer(serializers.ModelSerializer):
@@ -14,4 +14,4 @@ class PressureReadingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PressureReading
-        fields = ['SensorId', 'date_time', 'value']
+        fields = ['SensorId', 'date_time', 'value', 'raw_value']
